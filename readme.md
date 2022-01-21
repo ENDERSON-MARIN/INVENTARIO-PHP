@@ -7,6 +7,22 @@ INVENTARIO - PUNTO DE VENTA
 
 ## Getting Started
 
+
+### Prerequisites
+
+you need to install following software 
+1)	COMPOSER https://getcomposer.org/download/
+2)  WEB SERVER (PHP, APACHE)
+3)	DATABASE MYSQL
+4)  OTHER OPTIONS:
+    laragon https://laragon.org/download/index.html
+OR
+    xammp https://www.apachefriends.org/download.html
+OR
+	wammp https://sourceforge.net/projects/wampserver/files/latest/download
+
+
+
 # The easiest way to get started is to clone the repository:
 git clone https://github.com/ENDERSON-MARIN/INVENTARIO-PUNTO-VENTA.git
 
@@ -42,20 +58,6 @@ php artisan serve --port 5000
 
 you can check website will be up and running on localhost at 8000 port.
 http://localhost:5000
-
-
-### Prerequisites
-
-you need to install following software 
-1)	COMPOSER https://getcomposer.org/download/
-2)  WEB SERVER (PHP, APACHE)
-3)	DATABASE MYSQL
-4)  OTHER OPTIONS:
-    laragon https://laragon.org/download/index.html
-OR
-    xammp https://www.apachefriends.org/download.html
-OR
-	wammp https://sourceforge.net/projects/wampserver/files/latest/download
 
 
 ## Author
