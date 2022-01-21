@@ -1,0 +1,604 @@
+<?php namespace App\Http\Controllers;
+
+    use Session;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\DB;
+    use CRUDBooster;
+
+    use Illuminate\Support\Facades\Validator;
+    use Illuminate\Support\Carbon;
+    use RealRashid\SweetAlert\Facades\Alert;
+    use App\Http\Requests\VentaFormRequest;
+    use App\Models\Venta;
+    use App\Models\VentaDetalles;
+    use App\Models\Producto;
+
+	class AdminVentasController extends \crocodicstudio\crudbooster\controllers\CBController {
+
+	    public function cbInit() {
+
+			# START CONFIGURATION DO NOT REMOVE THIS LINE
+			$this->title_field = "id";
+			$this->limit = "20";
+			$this->orderby = "id,desc";
+			$this->global_privilege = false;
+			$this->button_table_action = true;
+			$this->button_bulk_action = true;
+			$this->button_action_style = "button_icon";
+			$this->button_add = true;
+			$this->button_edit = true;
+			$this->button_delete = true;
+			$this->button_detail = true;
+			$this->button_show = false;
+			$this->button_filter = true;
+			$this->button_import = false;
+			$this->button_export = true;
+			$this->table = "ventas";
+			# END CONFIGURATION DO NOT REMOVE THIS LINE
+
+			# START COLUMNS DO NOT REMOVE THIS LINE
+			$this->col = [];
+			$this->col[] = ["label"=>"Cliente","name"=>"cliente_id","join"=>"clientes,nombres"];
+			$this->col[] = ["label"=>"Num Factura","name"=>"num_factura"];
+			$this->col[] = ["label"=>"Fecha Venta","name"=>"fecha_venta"];
+			$this->col[] = ["label"=>"Responsable","name"=>"responsable_creacion"];
+			$this->col[] = ["label"=>"Observaciones","name"=>"observaciones"];
+			# END COLUMNS DO NOT REMOVE THIS LINE
+
+			# START FORM DO NOT REMOVE THIS LINE
+			$this->form = [];
+			$this->form[] = ['label'=>'Cliente Id','name'=>'cliente_id','type'=>'select2','validation'=>'required|integer|min:0','width'=>'col-sm-10','datatable'=>'cliente,id'];
+			$this->form[] = ['label'=>'Num Factura','name'=>'num_factura','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Fecha Venta','name'=>'fecha_venta','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Responsable Creacion','name'=>'responsable_creacion','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Responsable Edicion','name'=>'responsable_edicion','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Observaciones','name'=>'observaciones','type'=>'textarea','validation'=>'required|string|min:5|max:5000','width'=>'col-sm-10'];
+			# END FORM DO NOT REMOVE THIS LINE
+
+			# OLD START FORM
+			//$this->form = [];
+			//$this->form[] = ["label"=>"Cliente Id","name"=>"cliente_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"cliente,id"];
+			//$this->form[] = ["label"=>"Num Factura","name"=>"num_factura","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Fecha Venta","name"=>"fecha_venta","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Responsable Creacion","name"=>"responsable_creacion","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Responsable Edicion","name"=>"responsable_edicion","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Observaciones","name"=>"observaciones","type"=>"textarea","required"=>TRUE,"validation"=>"required|string|min:5|max:5000"];
+			# OLD END FORM
+
+			/*
+	        | ----------------------------------------------------------------------
+	        | Sub Module
+	        | ----------------------------------------------------------------------
+			| @label          = Label of action
+			| @path           = Path of sub module
+			| @foreign_key 	  = foreign key of sub table/module
+			| @button_color   = Bootstrap Class (primary,success,warning,danger)
+			| @button_icon    = Font Awesome Class
+			| @parent_columns = Sparate with comma, e.g : name,created_at
+	        |
+	        */
+	        $this->sub_module = array();
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Add More Action Button / Menu
+	        | ----------------------------------------------------------------------
+	        | @label       = Label of action
+	        | @url         = Target URL, you can use field alias. e.g : [id], [name], [title], etc
+	        | @icon        = Font awesome class icon. e.g : fa fa-bars
+	        | @color 	   = Default is primary. (primary, warning, succecss, info)
+	        | @showIf 	   = If condition when action show. Use field alias. e.g : [id] == 1
+	        |
+	        */
+	        $this->addaction = array();
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Add More Button Selected
+	        | ----------------------------------------------------------------------
+	        | @label       = Label of action
+	        | @icon 	   = Icon from fontawesome
+	        | @name 	   = Name of button
+	        | Then about the action, you should code at actionButtonSelected method
+	        |
+	        */
+	        $this->button_selected = array();
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Add alert message to this module at overheader
+	        | ----------------------------------------------------------------------
+	        | @message = Text of message
+	        | @type    = warning,success,danger,info
+	        |
+	        */
+	        $this->alert        = array();
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Add more button to header button
+	        | ----------------------------------------------------------------------
+	        | @label = Name of button
+	        | @url   = URL Target
+	        | @icon  = Icon from Awesome.
+	        |
+	        */
+	        $this->index_button = array();
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Customize Table Row Color
+	        | ----------------------------------------------------------------------
+	        | @condition = If condition. You may use field alias. E.g : [id] == 1
+	        | @color = Default is none. You can use bootstrap success,info,warning,danger,primary.
+	        |
+	        */
+	        $this->table_row_color = array();
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | You may use this bellow array to add statistic at dashboard
+	        | ----------------------------------------------------------------------
+	        | @label, @count, @icon, @color
+	        |
+	        */
+	        $this->index_statistic = array();
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Add javascript at body
+	        | ----------------------------------------------------------------------
+	        | javascript code in the variable
+	        | $this->script_js = "function() { ... }";
+	        |
+	        */
+	        $this->script_js = NULL;
+
+
+            /*
+	        | ----------------------------------------------------------------------
+	        | Include HTML Code before index table
+	        | ----------------------------------------------------------------------
+	        | html code to display it before index table
+	        | $this->pre_index_html = "<p>test</p>";
+	        |
+	        */
+	        $this->pre_index_html = null;
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Include HTML Code after index table
+	        | ----------------------------------------------------------------------
+	        | html code to display it after index table
+	        | $this->post_index_html = "<p>test</p>";
+	        |
+	        */
+	        $this->post_index_html = null;
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Include Javascript File
+	        | ----------------------------------------------------------------------
+	        | URL of your javascript each array
+	        | $this->load_js[] = asset("myfile.js");
+	        |
+	        */
+	        $this->load_js = array();
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Add css style at body
+	        | ----------------------------------------------------------------------
+	        | css code in the variable
+	        | $this->style_css = ".style{....}";
+	        |
+	        */
+	        $this->style_css = NULL;
+
+
+
+	        /*
+	        | ----------------------------------------------------------------------
+	        | Include css File
+	        | ----------------------------------------------------------------------
+	        | URL of your css each array
+	        | $this->load_css[] = asset("myfile.css");
+	        |
+	        */
+	        $this->load_css = array();
+
+
+	    }
+
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for button selected
+	    | ----------------------------------------------------------------------
+	    | @id_selected = the id selected
+	    | @button_name = the name of button
+	    |
+	    */
+	    public function actionButtonSelected($id_selected,$button_name) {
+	        //Your code here
+
+	    }
+
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for manipulate query of index result
+	    | ----------------------------------------------------------------------
+	    | @query = current sql query
+	    |
+	    */
+	    public function hook_query_index(&$query) {
+	        //Your code here
+
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for manipulate row of index table html
+	    | ----------------------------------------------------------------------
+	    |
+	    */
+	    public function hook_row_index($column_index,&$column_value) {
+	    	//Your code here
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for manipulate data input before add data is execute
+	    | ----------------------------------------------------------------------
+	    | @arr
+	    |
+	    */
+	    public function hook_before_add(&$postdata) {
+	        //Your code here
+
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for execute command after add public static function called
+	    | ----------------------------------------------------------------------
+	    | @id = last insert id
+	    |
+	    */
+	    public function hook_after_add($id) {
+	        //Your code here
+
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for manipulate data input before update data is execute
+	    | ----------------------------------------------------------------------
+	    | @postdata = input post data
+	    | @id       = current id
+	    |
+	    */
+	    public function hook_before_edit(&$postdata,$id) {
+	        //Your code here
+
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for execute command after edit public static function called
+	    | ----------------------------------------------------------------------
+	    | @id       = current id
+	    |
+	    */
+	    public function hook_after_edit($id) {
+	        //Your code here
+
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for execute command before delete public static function called
+	    | ----------------------------------------------------------------------
+	    | @id       = current id
+	    |
+	    */
+	    public function hook_before_delete($id) {
+	        //Your code here
+
+	    }
+
+	    /*
+	    | ----------------------------------------------------------------------
+	    | Hook for execute command after delete public static function called
+	    | ----------------------------------------------------------------------
+	    | @id       = current id
+	    |
+	    */
+	    public function hook_after_delete($id) {
+	        //Your code here
+
+	    }
+
+	    //By the way, you can still create your own method in here... :)
+
+        public function getAdd (){
+			$data['page_title'] = "REGISTRAR NUEVA VENTA";
+
+			$clientes = DB::table('clientes')->get();
+
+  			$productos = DB::table('productos as prod')
+  			->join('compra_detalles as cd','prod.id','=','cd.producto_id')
+  			->select(DB::raw('CONCAT(prod.id, "---",prod.nombre) AS producto_completo'),'prod.id', 'prod.referencia', 'prod.stock', DB::raw('MAX(cd.precio_compra) as ultimo_precio'))
+  			->where('prod.estado','=','ACTIVO')
+  			->where('prod.stock','>','0')
+  			->groupBy('producto_completo','prod.id','prod.stock')
+  			->get();
+
+			$date = Carbon::now();
+			$fecha_hora = $date->format('Y-m-d H:i:s');
+			$responsable_creacion = CRUDBooster::myId();
+
+			//dd($productos);
+
+			$this->cbView('ventas.crear', compact('data', 'clientes', 'productos', 'fecha_hora', 'responsable_creacion'));
+
+		}
+
+        public function store(VentaFormRequest $request){
+                    //dd($request->all());
+
+			try{
+				DB::beginTransaction();
+				$venta=new Venta;
+				$venta->cliente_id=$request->get('slCliente');
+				$venta->num_factura=$request->get('txtFactura');
+				$venta->fecha_venta=$request->get('txtFechaVenta');
+				$venta->responsable_creacion=$request->get('txtResponsableCreacion');
+				$venta->observaciones=$request->get('txtObservaciones');
+
+				//dd($venta);
+
+				$venta->save();
+
+				$idproducto = $request->get('idproducto');
+				$precio = $request->get('precio');
+				$cantidad = $request->get('cantidad');
+				$observaciones = $request->get('observaciones');
+
+				$cont = 0;
+
+				while($cont < count($idproducto)){
+					$detalle = new VentaDetalles();
+					$detalle->venta_id= $venta->id;
+					$detalle->producto_id= $idproducto[$cont];
+					$detalle->precio_venta= $precio[$cont];
+					$detalle->cantidad= $cantidad[$cont];
+					$detalle->observaciones= $observaciones[$cont];
+
+					//dd($detalle);
+
+					$detalle->save();
+					$cont=$cont+1;
+
+				}
+				DB::commit();
+
+				Alert::success('VENTA REGISTRADA EXITOSAMENTE!', '');
+
+				return back();
+
+                }catch(\Exception $e){
+
+                    DB::rollBack();
+
+                    Alert::error('ERROR AL REGISTRAR LA VENTA, POR FAVOR VERIFIQUE!', '');
+
+                    dd($e);
+
+                    return back();
+                }
+
+		}
+
+
+ 		public function getEdit ($id){
+			$data['page_title'] = "EDITAR VENTA";
+
+			$responsable_edicion = CRUDBooster::myId();
+
+			$clientes = DB::table('clientes')->get();
+
+  			$productos = DB::table('productos as prod')
+  			->join('compra_detalles as cd','prod.id','=','cd.producto_id')
+  			->select(DB::raw('CONCAT(prod.id, "---",prod.nombre) AS producto_completo'),'prod.id', 'prod.referencia', 'prod.stock', DB::raw('MAX(cd.precio_compra) as ultimo_precio'))
+  			->where('prod.estado','=','ACTIVO')
+  			->where('prod.stock','>','0')
+  			->groupBy('producto_completo','prod.id','prod.stock')
+  			->get();
+
+			$venta=DB::table('ventas as v')
+			->join('venta_detalles as vd','v.id','=','vd.venta_id')
+			->join('cms_users as u','v.responsable_creacion','=','u.id')
+			->select('v.*', 'u.name as responsable_venta', DB::raw('sum(vd.cantidad*vd.precio_venta) as total_venta'))
+			->where('v.id','=',$id)
+			->groupBy('v.id')
+			->first();
+
+			$ventaDetalles = DB::table('venta_detalles')
+			->join('ventas', 'venta_detalles.venta_id', '=', 'ventas.id')
+			->join('productos', 'venta_detalles.producto_id', '=', 'productos.id')
+			->select('venta_detalles.*', 'productos.nombre as nombre_producto')
+			->where('ventas.id', $id)
+			->get();
+
+			//dd($productos);
+			//dd($venta, $ventaDetalles);
+
+			$this->cbView('ventas.edit', compact('data', 'clientes', 'responsable_edicion', 'productos',  'venta', 'ventaDetalles'));
+
+		}
+
+        public function postVentasEdit(Request $request, $id)
+        {
+            $venta = Venta::findOrFail($id);
+
+			$ventaDetalles = DB::table('venta_detalles')
+			->join('ventas', 'venta_detalles.venta_id', '=', 'ventas.id')
+			->join('productos', 'venta_detalles.producto_id', '=', 'productos.id')
+			->select('venta_detalles.*', 'productos.nombre as nombre_producto')
+			->where('ventas.id', $id)
+			->get();
+
+            //dd($ventas, $ventaDetalles);
+
+            try {
+                DB::beginTransaction();
+
+                $venta->cliente_id=$request->get('slCliente');
+				$venta->num_factura=$request->get('txtFactura');
+				$venta->fecha_venta=$request->get('txtFechaVenta');
+				$venta->responsable_edicion=$request->get('txtResponsableEdicion');
+				$venta->observaciones=$request->get('txtObservaciones');
+
+                //dd($venta);
+
+                $venta->save();
+
+                DB::commit();
+
+                Alert::success('ENCABEZADO DE VENTA EDITADO EXITOSAMENTE!', '');
+
+                return back();
+
+            }catch(\Exception $e){
+
+                DB::rollBack();
+
+                Alert::error('ERROR AL EDITAR EL ENCABEZADO DE LA VENTA, POR FAVOR VERIFIQUE!', '');
+
+                dd($e);
+
+                return back();
+            }
+
+        }
+
+        public function AgregarProductoVentas(Request $request){
+
+				try {
+					DB::beginTransaction();
+
+					$idVenta = $request->get('ptxtIdVenta');
+					$idproducto = $request->get('ptxtIdProducto');
+					$cantidad = $request->get('ptxtCantidad');
+					$disponible = $request->get('ptxtDisponible');
+					$precio_venta = $request->get('ptxtUltimoPrecio');
+					$observaciones = $request->get('ptxtObservacionesDetalles');
+
+					//dd($idVenta, $idproducto, $cantidad, $disponible, $precio_venta, $observaciones);
+
+					if ($idproducto!="" && $cantidad!="" && $cantidad>0 && $precio_venta!="")
+                	{
+
+						if($disponible >= $cantidad)
+						{
+
+						$detalle = new VentaDetalles();
+						$detalle->venta_id= $idVenta;
+						$detalle->producto_id= $idproducto;
+						$detalle->cantidad= $cantidad;
+						$detalle->precio_venta= $precio_venta;
+						$detalle->observaciones= $observaciones;
+
+						//dd($detalle);
+
+						$detalle->save();
+
+						DB::commit();
+
+						Alert::success('PRODUCTO GUARDADO EXITOSAMENTE!', '');
+
+						return back();
+						}
+						else
+                    	{
+						Alert::error('La *CANTIDAD* de salida del PRODUCTO es mayor a la *DISPONIBLE* en almacén, por favor verifique!!', '');
+						return back();
+                    	}
+					}
+					else
+					{
+						Alert::error('Error al ingresar el detalle de la Venta, revise los datos del PRODUCTO!', '');
+						return back();
+					}
+
+					}catch(\Exception $e){
+
+						DB::rollBack();
+
+						Alert::error('ERROR AL GUARDAR PRODUCTO, POR FAVOR VERIFIQUE!', '');
+
+						dd($e);
+
+						return back();
+			        }
+		}
+
+		public function getDetail ($id){
+			$data['page_title'] = "VER DETALLES DE LA VENTA";
+
+            $venta=DB::table('ventas as v')
+			->join('venta_detalles as vd','v.id','=','vd.venta_id')
+			->join('clientes as c','v.cliente_id','=','c.id')
+			->join('cms_users as u','v.responsable_creacion','=','u.id')
+			->select('v.*', 'u.name as responsable_venta', 'c.nombres as cliente_venta', DB::raw('sum(vd.cantidad*vd.precio_venta) as total_venta'))
+			->where('v.id','=',$id)
+			->groupBy('v.id')
+			->first();
+
+			$ventaDetalles = DB::table('venta_detalles')
+			->join('ventas', 'venta_detalles.venta_id', '=', 'ventas.id')
+			->join('productos', 'venta_detalles.producto_id', '=', 'productos.id')
+			->select('venta_detalles.*', 'productos.nombre as nombre_producto')
+			->where('ventas.id', $id)
+			->get();
+
+			//dd($venta, $ventaDetalles);
+
+			$this->cbView('ventas.show', compact('data', 'venta', 'ventaDetalles'));
+
+		}
+
+		public function destroyProductoVentas($id){
+
+				$detalle = VentaDetalles::findOrFail($id);
+
+                //dd($detalle);
+
+				$detalle->delete();
+
+				Alert::success('DETALLE DE VENTA ELIMINADO EXITOSAMENTE!', '');
+
+				return back();
+		}
+
+
+
+	}
