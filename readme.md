@@ -4,6 +4,11 @@ INVENTARIO - PUNTO DE VENTA
 ![](public/img/login.png)
 ![](public/img/lockscreen.png)
 ![](public/img/dashboard.png)
+![](public/img/index.png)
+![](public/img/create.png)
+![](public/img/edit.png)
+![](public/img/show.png)
+![](public/img/export.png)
 
 ## Getting Started
 
