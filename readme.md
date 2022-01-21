@@ -1,9 +1,9 @@
 # Project Title
 INVENTARIO - PUNTO DE VENTA
 # Screenshot
-![](public/assets/img/login.png)
-![](public/assets/img/lockscreen.png)
-![](public/assets/img/dashboard.png)
+![](public/img/login.png)
+![](public/img/lockscreen.png)
+![](public/img/dashboard.png)
 
 ## Getting Started
 
