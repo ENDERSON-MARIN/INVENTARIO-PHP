@@ -1,81 +1,113 @@
-services:
-  mysql:
-    image: mysql:5.7
-    container_name: laravel_mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root_secret
-      MYSQL_DATABASE: laravel_inventory
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel_secret
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/dumps:/docker-entrypoint-initdb.d
-    ports:
-      - "3306:3306"
-    networks:
-      - laravel_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+version: "3.8"
 
-  php:
+services:
+  # Aplicação Laravel
+  app:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
-    container_name: laravel_php
+      dockerfile: Dockerfile
+    container_name: inventario-app
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
-    networks:
-      - laravel_network
-    depends_on:
-      mysql:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-
-  nginx:
-    image: nginx:alpine
-    container_name: laravel_nginx
-    restart: unless-stopped
-    ports:
-      - "8000:80"
-    volumes:
-      - ./:/var/www/html:ro
-      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - laravel_network
-    depends_on:
-      - php
-
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: laravel_phpmyadmin
-    restart: unless-stopped
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
     environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      PMA_USER: laravel
-      PMA_PASSWORD: laravel_secret
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - inventario-network
     ports:
       - "8080:80"
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: inventario-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     networks:
-      - laravel_network
-    depends_on:
-      mysql:
-        condition: service_healthy
+      - inventario-network
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: inventario-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - inventario-network
+    ports:
+      - "6379:6379"
+
+  # Queue Worker (opcional, descomente se usar queues)
+  # queue:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: inventario-queue
+  #   restart: unless-stopped
+  #   working_dir: /var/www/html
+  #   volumes:
+  #     - ./:/var/www/html
+  #   command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+  #   depends_on:
+  #     - mysql
+  #     - redis
+  #   networks:
+  #     - inventario-network
+
+  # Scheduler (opcional, descomente se usar schedule)
+  # scheduler:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: inventario-scheduler
+  #   restart: unless-stopped
+  #   working_dir: /var/www/html
+  #   volumes:
+  #     - ./:/var/www/html
+  #   command: >
+  #     sh -c "while true; do
+  #       php artisan schedule:run --verbose --no-interaction &
+  #       sleep 60
+  #     done"
+  #   depends_on:
+  #     - mysql
+  #     - redis
+  #   networks:
+  #     - inventario-network
 
 networks:
-  laravel_network:
+  inventario-network:
     driver: bridge
 
 volumes:
-  mysql_data:
+  mysql-data:
+    driver: local
+  redis-data:
     driver: local

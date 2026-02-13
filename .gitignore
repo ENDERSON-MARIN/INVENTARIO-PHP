@@ -7,6 +7,7 @@
 /.vscode
 /.vagrant
 .env
+.env.production
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -17,6 +18,15 @@ package-lock.json
 storage/debugbar/*
 storage/logs/*
 storage/framework/*
+
+# Docker
+/backups/*.sql
+/backups/*.sql.gz
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
 
 
 
