@@ -1,6 +1,9 @@
 # Project Title
+
 INVENTARIO - PUNTO DE VENTA
+
 # Screenshot
+
 ![](public/img/login.png)
 ![](public/img/lockscreen.png)
 ![](public/img/dashboard.png)
@@ -12,63 +15,120 @@ INVENTARIO - PUNTO DE VENTA
 
 ## Getting Started
 
+You can run this application in two ways:
 
-### Prerequisites
+### Option 1: Docker Development Environment (Recommended)
 
-you need to install following software 
-1)	COMPOSER https://getcomposer.org/download/
-2)  WEB SERVER (PHP, APACHE)
-3)	DATABASE MYSQL
-4)  OTHER OPTIONS:
-    laragon https://laragon.org/download/index.html
-OR
-    xammp https://www.apachefriends.org/download.html
-OR
-	wammp https://sourceforge.net/projects/wampserver/files/latest/download
+The easiest way to get started is using Docker. This provides a complete development environment with PHP, Nginx, MySQL, and phpMyAdmin pre-configured.
 
+**Quick Start:**
 
-
-# The easiest way to get started is to clone the repository:
+```bash
+# Clone the repository
 git clone https://github.com/ENDERSON-MARIN/INVENTARIO-PUNTO-VENTA.git
-
-# Change directory
 cd project_dir
 
-# Config enviroments file:
-1) DB_CONNECTION=mysql
-2) DB_HOST=127.0.0.1
-3) DB_PORT=3306
-4) DB_DATABASE=Your_Database_Here
-5) DB_USERNAME=Your_Username_Here
-6) DB_PASSWORD=Your_password_Here
+# Run the automated setup script
+bash scripts/setup.sh
+```
 
+That's it! The application will be available at:
 
-# Install COMPOSER dependencies
+- **Application**: http://localhost:8000
+- **phpMyAdmin**: http://localhost:8080
+
+**Manual Docker Setup:**
+
+```bash
+# Copy environment configuration
+cp .env.docker .env
+
+# Start containers
+docker-compose up -d
+
+# Generate application key
+docker-compose exec php php artisan key:generate
+```
+
+**Common Docker Commands:**
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose stop
+
+# Restart containers
+docker-compose restart
+
+# Run artisan commands
+docker-compose exec php php artisan [command]
+
+# Run composer commands
+docker-compose exec php composer [command]
+```
+
+For detailed Docker documentation, see [docs/README.docker.md](docs/README.docker.md)
+
+### Option 2: Traditional Setup
+
+If you prefer not to use Docker, you can install the dependencies manually.
+
+**Prerequisites:**
+
+You need to install the following software:
+
+1. COMPOSER https://getcomposer.org/download/
+2. WEB SERVER (PHP 7.4+, APACHE)
+3. DATABASE MYSQL 5.7+
+4. OTHER OPTIONS:
+    - laragon https://laragon.org/download/index.html
+    - xampp https://www.apachefriends.org/download.html
+    - wamp https://sourceforge.net/projects/wampserver/files/latest/download
+
+**Setup Steps:**
+
+```bash
+# Clone the repository
+git clone https://github.com/ENDERSON-MARIN/INVENTARIO-PUNTO-VENTA.git
+cd project_dir
+
+# Copy environment file
+cp .env.example .env
+
+# Configure database in .env file:
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=Your_Database_Here
+# DB_USERNAME=Your_Username_Here
+# DB_PASSWORD=Your_password_Here
+
+# Install Composer dependencies
 composer install
 
 # Install NPM dependencies
 npm install
 
-# Compile NPM dependencies
+# Compile assets
 npm run dev
 
-# RUN THE MIGRATIONS:
-php artisan migrate
-
-# APP Key Generate:
+# Generate application key
 php artisan key:generate
 
-# Then simply start your app
+# Run migrations
+php artisan migrate
+
+# Start development server
 php artisan serve --port 5000
+```
 
-you can check website will be up and running on localhost at 8000 port.
-http://localhost:5000
-
+The application will be available at http://localhost:5000
 
 ## Author
 
-* [Enderson Marín](https://github.com/ENDERSON-MARIN)
-
+- [Enderson Marín](https://github.com/ENDERSON-MARIN)
 
 ## License
 
@@ -76,4 +136,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Web Site:
 
-* https://www.marinenderson.com
+- https://www.marinenderson.com
