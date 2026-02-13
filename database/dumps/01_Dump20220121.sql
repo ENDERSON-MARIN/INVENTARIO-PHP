@@ -1,3 +1,28 @@
+-- ============================================================================
+-- Laravel 5.7 Inventory Management System - Database Initialization Script
+-- ============================================================================
+--
+-- Purpose: This script initializes the complete database schema and seed data
+--          for the Laravel inventory management system. It creates all tables
+--          for the CRUDBooster CMS framework and the business entities
+--          (productos, categorias, clientes, proveedores, compras, ventas).
+--
+-- Execution: This script is automatically executed by MySQL Docker container
+--            on first startup via the /docker-entrypoint-initdb.d/ mechanism.
+--            Files are executed in alphabetical order.
+--
+-- Naming: 01_Dump20220121.sql (prefix ensures execution before triggers)
+--
+-- Contents:
+--   - CMS tables (cms_users, cms_privileges, cms_logs, etc.)
+--   - Business entity tables (categorias, productos, clientes, proveedores)
+--   - Transaction tables (compras, ventas, compra_detalles, venta_detalles)
+--   - Sample data for development and testing
+--
+-- Note: Triggers for stock management are defined in a separate file
+--       (02_triggers_PRODUCTOS.sql) to ensure proper execution order.
+--
+-- ============================================================================
 -- MySQL dump 10.13  Distrib 8.0.23, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: inventas
