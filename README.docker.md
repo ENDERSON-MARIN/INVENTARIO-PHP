@@ -1,8 +1,19 @@
 # Docker Development Environment
 
-This document provides instructions for running the Laravel 5.7 Inventory Management System using Docker Compose.
+Este documento fornece instruções para executar o Sistema de Gerenciamento de Inventário Laravel 5.7 usando Docker Compose.
 
-## Prerequisites
+## Otimização de Cache
+
+O Docker foi configurado para **máxima eficiência de cache**. Isso significa:
+
+- ✅ Dependências do sistema são instaladas apenas uma vez
+- ✅ Extensões PHP são compiladas apenas uma vez
+- ✅ Dependências Composer são reinstaladas apenas quando você adiciona/remove pacotes
+- ✅ Mudanças no código não requerem rebuild
+
+**Para detalhes completos sobre cache**, veja [docker/CACHE.md](docker/CACHE.md)
+
+## Pré-requisitos
 
 Before you begin, ensure you have the following installed on your system:
 

@@ -22,13 +22,13 @@ done
 
 echo "MySQL is ready!"
 
-# Install Composer dependencies if vendor directory is missing
-if [ ! -d "vendor" ]; then
-    echo "vendor/ directory not found. Running composer install..."
+# Check if vendor directory needs updating (only in development)
+if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
+    echo "vendor/ directory not found or incomplete. Running composer install..."
     composer install --no-interaction --prefer-dist --optimize-autoloader
     echo "Composer dependencies installed successfully"
 else
-    echo "vendor/ directory exists, skipping composer install"
+    echo "vendor/ directory exists and is complete, skipping composer install"
 fi
 
 # Set proper permissions for Laravel directories
